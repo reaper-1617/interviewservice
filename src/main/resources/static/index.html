@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Main page for interview questions</title>
+</head>
+<body>
+<h1>Hello there</h1>
+<div>
+    <div>
+        <div>
+            <label for="question">Question:</label><br>
+            <input type="text" id="question" name="question">
+        </div>
+        <div>
+            <label for="answer">Answer:</label><br>
+            <input type="text" id="answer" name="answer">
+        </div>
+        <div>
+            <label for="tags">Tags:</label><br>
+            <input type="text" id="tags" name="tags">
+        </div>
+        <div>
+            <label for="rate">Rate:</label><br>
+            <input type="number" id="rate" name="rate">
+        </div>
+        <div>
+            <input type="button" value="Submit" onclick="sendInterviewItem()">
+        </div>
+    </div>
+    <br>
+    <hr>
+    <div id="items">
+
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+
+
+
+    var host = "http://localhost:8085";
+    var itemsUrl = "/items";
+
+    $(document).ready(function(){
+      getInterviewItems();
+    });
+
+
+    function sendInterviewItem(){
+        var questionEl = document.getElementById("question").value;
+        var answerEl = document.getElementById("answer").value;
+        var tagsEl = document.getElementById("tags").value;
+        var rateEl = document.getElementById("rate").value;
+        var tagsArr = tagsEl.split(",");
+
+        var postData = {
+            "question" : questionEl,
+            "answer" : answerEl,
+            "tags" : tagsArr,
+            "rate" : rateEl
+        }
+
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function(){
+            if (this.readyState == 4 && this.status == 200){
+                var jsonResponse = JSON.parse(this.responseText);
+            }
+        }
+        xhttp.open("POST", host + itemsUrl , false);
+        xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhttp.send(JSON.stringify(postData));
+        getInterviewItems();
+    }
+
+    function getInterviewItems(){
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function(){
+            if (this.readyState == 4 && this.status == 200){
+                var response = JSON.parse(this.responseText);
+                fillItems(response);
+            }
+        }
+        xhttp.open("GET", host + itemsUrl , true);
+        xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhttp.send();
+    }
+
+    function fillItems(inputObj){
+
+        var itemsDiv = document.getElementById("items");
+        itemsDiv.innerHTML = "";
+
+        var itemsArr = inputObj["_embedded"]["items"];
+
+        for(var i = 0; i < itemsArr.length; i++){
+            var itemDiv = document.createElement("div");
+            var questionDiv = document.createElement("div");
+            var answerDiv = document.createElement("div");
+            var qText = document.createTextNode("Question: " + itemsArr[i].question);
+            var aText = document.createTextNode("Answer: " + itemsArr[i].answer);
+            var brNode = document.createElement("br");
+            questionDiv.appendChild(qText);
+            answerDiv.appendChild(aText);
+            itemDiv.appendChild(questionDiv);
+            itemDiv.appendChild(answerDiv);
+            itemsDiv.appendChild(itemDiv);
+            itemsDiv.appendChild(brNode);
+        }
+
+    }
+
+
+
+
+
+
+</script>
+</html>
